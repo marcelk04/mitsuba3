@@ -155,7 +155,7 @@ MI_VARIANT void Mesh<Float, Spectrum>::parameters_changed(const std::vector<std:
             Base::initialize();
     }
 
-    Base::parameters_changed();
+    Base::parameters_changed(keys);
 }
 
 MI_VARIANT typename Mesh<Float, Spectrum>::ScalarBoundingBox3f
@@ -822,7 +822,7 @@ Mesh<Float, Spectrum>::eval_parameterization(const Point2f &uv,
 
     PreliminaryIntersection3f pi =
         m_parameterization->ray_intersect_preliminary(
-            ray, /* coherent = */ true, active);
+            ray, ray_flags, /* coherent = */ true, active);
     active &= pi.is_valid();
 
     if (dr::none_or<false>(active))
@@ -1550,6 +1550,7 @@ Mesh<Float, Spectrum>::compute_surface_interaction(const Ray3f &ray,
         si.sh_frame.n = -si.sh_frame.n;
     }
 
+    si.prim_index = pi.prim_index;
     si.shape    = this;
     si.instance = nullptr;
 
