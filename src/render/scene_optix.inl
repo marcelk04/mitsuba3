@@ -596,7 +596,6 @@ MI_VARIANT void Scene<Float, Spectrum>::static_accel_shutdown_gpu() {
 
 MI_VARIANT typename Scene<Float, Spectrum>::PreliminaryIntersection3f
 Scene<Float, Spectrum>::ray_intersect_preliminary_gpu(const Ray3f &ray,
-                                                      uint32_t ray_flags_,
                                                       Mask active) const {
     if constexpr (dr::is_cuda_v<Float>) {
         MiOptixSceneState &s = *(MiOptixSceneState *) m_accel;
