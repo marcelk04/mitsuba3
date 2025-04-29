@@ -159,6 +159,8 @@ public:
             [](const LoopState& ls) { return ls.active; },
             [this, scene, bsdf_ctx](LoopState& ls) {
 
+            UInt32 min_depth = 0;
+
             /* dr::while_loop implicitly masks all code in the loop using the
                'active' flag, so there is no need to pass it to every function */
 
@@ -185,11 +187,14 @@ public:
                 // Compute MIS weight for emitter sample from previous bounce
                 Float mis_bsdf = mis_weight(ls.prev_bsdf_pdf, em_pdf);
 
+                // TODO:
                 // Accumulate, being careful with polarization (see spec_fma)
-                ls.result = spec_fma(
-                    ls.throughput,
-                    ds.emitter->eval(si, ls.prev_bsdf_pdf > 0.f) * mis_bsdf,
-                    ls.result);
+                if (dr::any_or<true>(ls.depth >= min_depth)) {
+                    ls.result = spec_fma(
+                        ls.throughput,
+                        ds.emitter->eval(si, ls.prev_bsdf_pdf > 0.f) * mis_bsdf,
+                        ls.result);
+                }
             }
 
             // Continue tracing the path at this point?
@@ -245,9 +250,12 @@ public:
                 Float mis_em =
                     dr::select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
 
+                // TODO:
                 // Accumulate, being careful with polarization (see spec_fma)
-                ls.result[active_em] = spec_fma(
-                    ls.throughput, bsdf_val * em_weight * mis_em, ls.result);
+                if (dr::any_or<true>(ls.depth + 1 >= min_depth)) {
+                    ls.result[active_em] = spec_fma(
+                        ls.throughput, bsdf_val * em_weight * mis_em, ls.result);
+                }
             }
 
             // ---------------------- BSDF sampling ----------------------
